@@ -2,6 +2,7 @@ require 'rest_client'
 require 'nokogiri'
 require 'json'
 require 'iconv'
+require 'uri'
 require_relative 'course.rb'
 # 難得寫註解，總該碎碎念。
 
@@ -68,6 +69,8 @@ class Spider
       # 分配欄位，多麼機械化！
       course_code = table_data[0].text
       course_title = table_data[1].text
+        # 跳過 '空白列'，覺得 buggy
+        next if table_data[2].css('a').empty?
       detail_url = table_data[2].css('a').first['href']
       credits = table_data[3].text
       required_or_elective = table_data[4].text
@@ -78,7 +81,7 @@ class Spider
       notes = table_data[11].text
 
       # 好，讓我們爬更深一層
-      r = RestClient.get detail_url
+      r = RestClient.get(URI.encode(detail_url))
       # 做一個編碼轉換的動作，防止 Nokogiri 解析失敗的動作
       ic = Iconv.new("utf-8//translit//IGNORE","utf-8")
       detail_page = Nokogiri::HTML(ic.iconv(r.to_s))
@@ -106,8 +109,10 @@ class Spider
       grading = detail_page.css('#tbx_grading').text
       det_note = detail_page.css('#tbx_remark').text
 
-      # 英語課程名稱
+      # 英語課程名稱 / 先修課程 / 課程相關網址
       english_course_title = detail_page.css('#lbl_engname').text
+      prerequisites = detail_page.css('#lbl_precourse').text
+      course_website = detail_page.css('#hlk_coursehttp').text
 
       # hash 化 course
       @courses << Course.new({
@@ -121,8 +126,8 @@ class Spider
         "people_in_course" => people_in_course,
         "course_time_location" => course_time_location,     
         "english_course_title" => english_course_title,
-        # "prerequisites" => prerequisites,
-        # "course_website" => course_website,
+        "prerequisites" => prerequisites,
+        "course_website" => course_website,
         "course_objective" => course_objective,    
         "outline" => course_outline,
         "textbook" => textbook,
