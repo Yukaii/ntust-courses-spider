@@ -116,26 +116,27 @@ class Spider
 
       # hash 化 course
       @courses << Course.new({
-        "course_title" => course_title,
-        "course_code" => course_code,
+        "title" => course_title,
+        "code" => course_code,
         "lecturer" => lecturer, 
         "credits" => credits,
-        "required_or_elective" => required_or_elective,
+        "required" => (required_or_elective == '選'),
         "full_or_half_semester" => full_or_half_semester,
         "semester" => semester,
         "people_in_course" => people_in_course,
-        "course_time_location" => course_time_location,     
-        "english_course_title" => english_course_title,
+        "time_location" => course_time_location,     
+        "english_title" => english_course_title,
         "prerequisites" => prerequisites,
-        "course_website" => course_website,
-        "course_objective" => course_objective,    
+        "website" => course_website,
+        "objective" => course_objective,    
         "outline" => course_outline,
         "textbook" => textbook,
         "references" => references,
         "notice" => notice,
         "grading" => grading,
         "note" => det_note,
-        "about" => notes
+        "about" => notes,
+        "url" => URI.encode(detail_url)
       }).to_hash
     end
 
